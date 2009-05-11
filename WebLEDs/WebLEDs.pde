@@ -1,10 +1,11 @@
-/* Web_Buzzer.pde - example sketch for Webduino library */
+/* WebLEDs.pde - Control the values of 5 LEDs using the Webduino library */
 
 #include "Ethernet.h"
 #include "WebServer.h"
 
 static uint8_t mac[6] = { 0x02, 0xAA, 0xBB, 0xCC, 0x00, 0x22 };
-static uint8_t ip[4] = { 192, 168, 1, 65 };
+//static uint8_t ip[4] = { 192, 168, 1, 65 }; // IP at girlfriend's flat
+static uint8_t ip[4] = { 192, 168, 1, 147 }; // IP at home
 
 /* all URLs on this server will start with /buzz because of how we
  * define the PREFIX value.  We also will listen on port 80, the
@@ -97,20 +98,24 @@ void processRequest(WebServer &server, WebServer::ConnectionType type)
     Serial.print("In GET...");
 
     /* store the HTML in program memory using the P macro */
-    P(message) = 
+    P(messageStart) = 
       "<html><head><title>Martin&apos;s LED Controller</title>"
       "<body>"
       "<h1>Change the value of an LED!</h1>"
-      "<form action='/led' method='POST'>"
-      "<p>2 <input type='checkbox' name='led' value='2' /></p>"
-      "<p>3 <input type='checkbox' name='led' value='3' /></p>"
-      "<p>4 <input type='checkbox' name='led' value='4' /></p>"
-      "<p>5 <input type='checkbox' name='led' value='5' /></p>"
-      "<p>6 <input type='checkbox' name='led' value='6' /></p>"
+      "<form action='/led' method='POST'>";
+    server.printP(messageStart);  
+      
+    int i;
+    for (i = 0; i < num_pins; i++) {
+      char pinChar[1];
+      itoa(pins[i], pinChar, 10);
+      server.checkBox("led",  pinChar, pinChar, (pinSettings[i] == HIGH));
+    }
+    
+    P(messageEnd) = 
       "<p><input type='submit' value='Submit' /></p>"
       "</form></body></html>";
-
-    server.printP(message);
+    server.printP(messageEnd);    
   }
 }
 
